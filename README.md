@@ -11,8 +11,8 @@ collaboration with other developers. To that end ...
 
 ## Rules
 
-No AI. So that's no vibecoding, no autocomplete, etc. This project is for us to
-practice our development skills and build something cool all by ourselves.
+No AI. So that's no vibecoding, generating code using LLMs generally, asking LLMs questions, no autocomplete, etc.
+This project is for us to practice our development skills and build something cool all by ourselves.
 
 ## Build Instructions
 
