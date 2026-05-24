@@ -1,8 +1,10 @@
 use raylib::prelude::*;
 
 pub mod mesh_tools;
+pub mod input;
 
 use mesh_tools::VecMesh;
+use input::camera_controls::{Player, update_camera};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -29,12 +31,7 @@ fn main() {
         .highdpi()
         .build();
 
-    let mut camera = Camera3D::perspective(
-        Vector3::new(3.0, 3.0, 3.0),
-        Vector3::new(0.0, 0.0, 0.0),
-        Vector3::new(0.0, 1.0, 0.0),
-        45.0,
-    );
+    let mut player = Player::new();
 
     let mut first_click = false;
 
@@ -50,8 +47,10 @@ fn main() {
                 rl.disable_cursor();
             }
         } else {
-            rl.update_camera(&mut camera, CameraMode::CAMERA_FIRST_PERSON);
+            // rl.update_camera(&mut camera, CameraMode::CAMERA_FIRST_PERSON);
+            update_camera(&mut player, &mut rl);
         }
+
 
         rl.draw(&thread, |mut d| {
             d.clear_background(Color::LIGHTBLUE);
@@ -60,7 +59,7 @@ fn main() {
                 d.draw_text("WIP: Click to start updating camera", 20, 20, 16, Color::DARKGREEN);
             }
 
-            d.draw_mode3D(camera, |mut d2, _camera| {
+            d.draw_mode3D(player.camera, |mut d2, _camera| {
                 d2.draw_mesh(&mesh, material.clone(), Matrix::identity());
             });
         });
