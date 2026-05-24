@@ -1,10 +1,10 @@
 use raylib::prelude::*;
 
 pub mod mesh_tools;
-pub mod input;
+pub mod camera_controls;
 
 use mesh_tools::VecMesh;
-use input::camera_controls::{Player, update_camera};
+use camera_controls::{Player, update_camera};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -61,6 +61,10 @@ fn main() {
 
             d.draw_mode3D(player.camera, |mut d2, _camera| {
                 d2.draw_mesh(&mesh, material.clone(), Matrix::identity());
+                d2.draw_cube(Vector3::new(0.0, 3.0, 0.0), 1.0, 1.0, 1.0, Color::GREEN);
+                d2.draw_cube(Vector3::new(3.0, 2.0, 0.0), 1.0, 1.0, 1.0, Color::RED);
+                d2.draw_cube(Vector3::new(-3.0, 0.0, 0.0), 1.0, 1.0, 1.0, Color::BLUE);
+                d2.draw_cube(Vector3::new(-3.0, 3.0, 0.0), 1.0, 1.0, 1.0, Color::ORANGE);
             });
         });
     }
