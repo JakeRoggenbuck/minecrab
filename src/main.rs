@@ -4,14 +4,12 @@ mod mesh_tools;
 mod camera_controls;
 mod world;
 
-use mesh_tools::VecMesh;
 use camera_controls::{Player, update_camera};
-use crate::world::generation::generate_chunk;
+use world::generation::World;
 
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
-const GEN_RADIUS: i64 = 2; 
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -31,13 +29,28 @@ fn main() {
         t.gen_texture_mipmaps();
         t.unwrap()
     };
+    eprintln!("[minecrab] creating world...");
 
+    let mut world = World::new();
     let mut models: Vec<Model> = Vec::new();
 
-    for cx in -GEN_RADIUS..GEN_RADIUS {
-    for cy in -GEN_RADIUS..GEN_RADIUS {
-    for cz in -GEN_RADIUS..GEN_RADIUS {
-        models.push(generate_chunk(&mut rl, &thread, cx, cy, cz));
+    eprintln!("[minecrab] generating terrain...");
+    let r = 0..4;
+    for cx in r.clone() {
+    for cy in r.clone() {
+    for cz in r.clone() {
+        world.generate_terrain_chunk(cx, cy, cz);
+    }}}
+
+    eprintln!("[minecrab] building meshes...");
+    for cx in r.clone() {
+    for cy in r.clone() {
+    for cz in r.clone() {
+        let mesh = world.build_geometry_chunk(cx, cy, cz);
+        let model =
+            rl.load_model_from_mesh(&thread, unsafe { mesh.make_weak() })
+            .unwrap();
+        models.push(model);
     }}}
 
     /* uncomment this return when profiling chunk generator */
