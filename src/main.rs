@@ -1,7 +1,25 @@
 use raylib::prelude::*;
 
+pub mod mesh_tools;
+
+use mesh_tools::VecMesh;
+
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
+
+/* example of generating a triangle from raylib examples page */
+fn gen_custom_mesh() -> Mesh {
+    let mut vmesh = VecMesh::new();
+
+    vmesh.vertices = vec![ 0.0, 0.0, 0.0, /**/ 1.0, 0.0, 2.0, /**/ 2.0, 0.0, 0.0];
+    vmesh.normals = vec![ 0.0, 1.0, 0.0, /**/ 0.0, 1.0, 0.0, /**/ 0.0, 1.0, 0.0];
+    vmesh.texcoords = vec![0.0, 0.0, /**/ 0.5, 1.0, /**/ 1.0, 0.0];
+
+    let mut mesh = vmesh.to_mesh();
+
+    unsafe { mesh.upload(false); }
+    return mesh;
+}
 
 fn main() {
     let (mut rl, thread) = raylib::init()
@@ -19,6 +37,9 @@ fn main() {
     );
 
     let mut first_click = false;
+
+    let mesh = gen_custom_mesh();
+    let material = rl.load_material_default(&thread);
 
     while !rl.window_should_close() {
         // require a click on the window before updating camera so the camera
@@ -40,7 +61,7 @@ fn main() {
             }
 
             d.draw_mode3D(camera, |mut d2, _camera| {
-                d2.draw_cube(Vector3::new(0.0, 0.0, 0.0), 1.0, 1.0, 1.0, Color::DARKGREEN);
+                d2.draw_mesh(&mesh, material.clone(), Matrix::identity());
             });
         });
     }
