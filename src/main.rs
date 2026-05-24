@@ -37,6 +37,7 @@ fn main() {
     );
 
     let mut first_click = false;
+    let mut debug_display = false; // toggle
 
     let mesh = gen_custom_mesh();
     let material = rl.load_material_default(&thread);
@@ -52,12 +53,19 @@ fn main() {
         } else {
             rl.update_camera(&mut camera, CameraMode::CAMERA_FIRST_PERSON);
         }
+        if rl.is_key_pressed(KeyboardKey::KEY_BACKSLASH) && first_click { // toggle debug menu
+            debug_display = !debug_display;
+        }
 
         rl.draw(&thread, |mut d| {
             d.clear_background(Color::LIGHTBLUE);
 
             if !first_click {
                 d.draw_text("WIP: Click to start updating camera", 20, 20, 16, Color::DARKGREEN);
+            }
+            if debug_display {
+                let debug_info = format!("Camera position: {:.4} {:.4} {:.4}", camera.position.x, camera.position.y, camera.position.z);
+                d.draw_text(&debug_info, 20, 20, 16, Color::DARKGREEN);
             }
 
             d.draw_mode3D(camera, |mut d2, _camera| {
