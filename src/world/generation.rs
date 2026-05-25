@@ -150,16 +150,6 @@ impl World {
             self.generate_terrain_voxel(wx, wy, wz);
         }}};
     }
- 
-    fn build_geometry_voxel(
-        self: &mut Self, vmesh: &mut VecMesh, x: i64, y: i64, z: i64
-    ) {
-       worldmesh::build_geometry_voxel(self, vmesh, x, y, z);
-    }
-
-    pub fn build_geometry_chunk(&mut self, cx: i64, cy: i64, cz: i64) {
-        worldmesh::build_geometry_chunk(self, cx, cy, cz);
-    }
     
     pub fn generate_next_chunk(self: &mut Self) {
         if self.next_gen_x > WORLD_RADIUS {
@@ -171,8 +161,8 @@ impl World {
             self.next_gen_x, self.next_gen_y, self.next_gen_z
         );
 
-        self.build_geometry_chunk(
-            self.next_gen_x, self.next_gen_y, self.next_gen_z
+        worldmesh::build_geometry_chunk(
+            self, self.next_gen_x, self.next_gen_y, self.next_gen_z
         );
 
         self.next_gen_z += 1;
