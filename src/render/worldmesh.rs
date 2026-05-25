@@ -115,7 +115,7 @@ pub fn build_geometry_voxel(
     }
 }
 
-pub fn build_geometry_chunk(world: &mut World, cx: i64, cy: i64, cz: i64) {
+pub fn build_geometry_chunk(world: &mut World, cx: i64, cy: i64, cz: i64) -> Mesh {
     let mut vmesh = VecMesh::new();
     
     assert!(world.chunks.contains_key(&(cx, cy, cz)));
@@ -146,7 +146,35 @@ pub fn build_geometry_chunk(world: &mut World, cx: i64, cy: i64, cz: i64) {
     let mut mesh = vmesh.to_mesh();
     unsafe { mesh.upload(false) };
 
-    let chunk = world.chunks.get_mut(&(cx, cy, cz)).unwrap();
+    return mesh
+}
 
-    chunk.mesh = Some(mesh);
+pub struct WorldRenderer {
+    // Right now, all we need is a list of meshes to render.
+    // IN THE FUTURE, this should be a map of some sort.
+    chunk_meshes: Vec<Option<Mesh>>,
+    material: WeakMaterial,
+}
+
+impl WorldRenderer {
+
+    pub fn new(material: WeakMaterial) -> WorldRenderer {
+        WorldRenderer {
+            chunk_meshes: Vec::new(),
+            material: material,
+        }
+    }
+
+    pub fn add_mesh(&mut self, mesh: Mesh) {
+        self.chunk_meshes.push(Some(mesh))
+    }
+
+    pub fn render(&mut self, d: &mut RaylibDrawHandle, camera: Camera3D) {
+        d.draw_mode3D(camera, |mut d2, _camera| {
+            for mesh in &self.chunk_meshes {
+                d2.draw_mesh(mesh.as_ref().unwrap(), self.material.clone(), Matrix::identity());
+            }
+        });
+    }
+
 }

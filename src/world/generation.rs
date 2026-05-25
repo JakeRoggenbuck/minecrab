@@ -3,7 +3,6 @@ use raylib::prelude::*;
 
 use std::collections::HashMap;
 
-use crate::mesh_tools::VecMesh;
 use crate::render::worldmesh;
 use crate::world::blocks::BlockData;
 
@@ -24,8 +23,6 @@ pub struct Chunk {
      *   for (z):
      *     for (x): */
     voxels: Box<[BlockData]>,
-
-    pub mesh: Option<Mesh>,
 }
 
 pub struct World {
@@ -45,7 +42,7 @@ impl Chunk {
             voxels.push(BlockData { non_void: false });
         }
 
-        Self { cx, cy, cz, voxels: voxels.into_boxed_slice(), mesh: None }
+        Self { cx, cy, cz, voxels: voxels.into_boxed_slice() }
     }
 
     pub fn get_block_data(self: &Self, x: i64, y: i64, z: i64) -> BlockData {
@@ -151,7 +148,7 @@ impl World {
         }}};
     }
     
-    pub fn generate_next_chunk(self: &mut Self) {
+    pub fn generate_next_chunk(self: &mut Self, world_renderer: &mut worldmesh::WorldRenderer) {
         if self.next_gen_x > WORLD_RADIUS {
             // No more chunks left to generate.
             return;
@@ -161,8 +158,10 @@ impl World {
             self.next_gen_x, self.next_gen_y, self.next_gen_z
         );
 
-        worldmesh::build_geometry_chunk(
-            self, self.next_gen_x, self.next_gen_y, self.next_gen_z
+        world_renderer.add_mesh(
+            worldmesh::build_geometry_chunk(
+                self, self.next_gen_x, self.next_gen_y, self.next_gen_z
+            )
         );
 
         self.next_gen_z += 1;
