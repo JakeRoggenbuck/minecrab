@@ -31,13 +31,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+      - name: Install Depends
+        run: |
+          sudo apt update
+          sudo apt install cmake glfw3
+  
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
 
       - uses: Swatinem/rust-cache@v1
+
+      - name: Install Depends
+        run: |
+          sudo apt update
+          sudo apt install cmake glfw3
       
       - name: Test
         run: cargo test --verbose
@@ -47,6 +56,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install Depends
+        run: |
+          sudo apt update
+          sudo apt install cmake glfw3
       
       - uses: actions-rs/toolchain@v1
         with:
