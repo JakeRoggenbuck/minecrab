@@ -122,14 +122,14 @@ impl World {
         ];
 
         // arbitrary constants, give a height map between 4*12 and 6*12
-        let height = (SSN.get(sample_point) + 5_f64) * 12_f64; 
+        let height = ((SSN.get(sample_point) + 5_f64) * 12_f64) as i64; 
 
         for y in (CHUNK_SIZE * cy)..(CHUNK_SIZE * (cy + 1)) {
-            let block_data = if height < y as f64 {
+            let block_data = if y > height {
                 BlockData::AIR
-            } else if height < (y - 1) as f64 {
+            } else if y == height {
                 BlockData::GRASS
-            } else if height > 4_f64 {
+            } else if y > 4 {
                 BlockData::STONE
             } else {
                 BlockData::BEDROCK
