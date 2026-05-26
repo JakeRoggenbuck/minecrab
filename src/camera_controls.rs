@@ -61,11 +61,8 @@ fn movement_smooth(from: f32, to: f32) -> f32 {
     from + (to - from) * FRICTION
 }
 
-pub fn update_camera(player: &mut Player, rl: &mut RaylibHandle) {
+pub fn update_camera_angle(player: &mut Player, rl: &mut RaylibHandle) {
     let mouse_delta = rl.get_mouse_delta();
-
-    if rl.is_key_pressed(keys::SPEED_INC) { player.speed *= 2.0; }
-    else if rl.is_key_pressed(keys::SPEED_DEC) { player.speed /= 2.0; }
 
     player.view_azim += mouse_delta.x * MOUSE_SENS;
     player.view_elev -= mouse_delta.y * MOUSE_SENS;
@@ -73,6 +70,11 @@ pub fn update_camera(player: &mut Player, rl: &mut RaylibHandle) {
     // Avoid vertical singularities
     player.view_elev = player.view_elev.clamp(-1.57, 1.57);
 
+    if rl.is_key_pressed(keys::SPEED_INC) { player.speed *= 2.0; }
+    else if rl.is_key_pressed(keys::SPEED_DEC) { player.speed /= 2.0; }
+}
+
+pub fn update_camera_position(player: &mut Player, rl: &mut RaylibHandle) {
     let (azim_cos, azim_sin) = (player.view_azim.cos(), player.view_azim.sin());
 
     let flat_forward = Vector3 { x: azim_cos, y: 0.0, z: azim_sin };

@@ -4,7 +4,7 @@ mod mesh_tools;
 mod camera_controls;
 mod world;
 
-use camera_controls::{Player, update_camera};
+use camera_controls::{Player, update_camera_angle, update_camera_position};
 use world::generation::World;
 
 
@@ -55,10 +55,11 @@ fn main() {
                 rl.disable_cursor();
             }
         } else {
-            update_camera_in -= rl.get_frame_time();
             // rl.update_camera(&mut camera, CameraMode::CAMERA_FIRST_PERSON);
-            while update_camera_in < 0_f32 { // in case a frame takes longer than a tick, update multiple times
-                update_camera(&mut player, &mut rl);
+            update_camera_in -= rl.get_frame_time();
+            update_camera_angle(&mut player, &mut rl);
+            while update_camera_in < 0_f32 {
+                update_camera_position(&mut player, &mut rl);
                 update_camera_in += TICK_LENGTH;
             }
         }
