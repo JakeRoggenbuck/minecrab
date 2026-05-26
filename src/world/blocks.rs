@@ -7,6 +7,7 @@ pub enum BlockData {
     STONE,
     WOOD,
     LEAVES,
+    BEDROCK,
 }
 
 // Each type of block has six faces which can be rendered. Each face (until we
