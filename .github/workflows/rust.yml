@@ -22,9 +22,12 @@ jobs:
           toolchain: stable
 
       - uses: Swatinem/rust-cache@v1
+
+      - name: Dependencies
+        run: sudo apt install glfw
       
       - name: Build
-        run: cargo build --verbose
+        run: glfw3_DIR=/usr/lib/cmake/glfw3 cargo build --verbose
     
   test:
     runs-on: ubuntu-latest
