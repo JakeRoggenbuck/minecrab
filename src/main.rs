@@ -89,7 +89,7 @@ fn main() {
         }
 
         // Remove block
-        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT) && first_click {
+        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) && first_click {
             let p = player.camera.position;
 
             let mut dir = player.camera.target - player.camera.position;
@@ -111,7 +111,7 @@ fn main() {
         }
 
         // Add stone block
-        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT) && first_click {
+        if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT) && first_click {
             let p = player.camera.position;
 
             let mut dir = player.camera.target - player.camera.position;
@@ -121,7 +121,12 @@ fn main() {
 
             match hit {
                 Some(h) => {
-                    world.set_block_data(h.x, h.y, h.z, world::blocks::BlockData::STONE);
+                    world.set_block_data(
+                        h.x + h.normal_x as i64,
+                        h.y + h.normal_y as i64,
+                        h.z + h.normal_z as i64,
+                        world::blocks::BlockData::STONE
+                    );
 
                     let (cx, cy, cz) = World::get_chunk_coords_of_block(h.x, h.y, h.z);
                     let mesh = build_geometry_chunk(&mut world, cx, cy, cz);
