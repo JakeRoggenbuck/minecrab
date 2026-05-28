@@ -9,7 +9,7 @@ use world::generation::World;
 use world::collision::voxel_raycast;
 
 use crate::render::mesh_tools;
-use crate::render::worldmesh::WorldRenderer;
+use crate::render::worldmesh::{WorldRenderer, build_geometry_chunk};
 
 const WINDOW_WIDTH: i32 = 1280;
 const WINDOW_HEIGHT: i32 = 720;
@@ -99,7 +99,14 @@ fn main() {
             match hit {
                 Some(h) => {
                     // Remove h block
-                    println!("Trying to remove {:?}", h);
+                    world.set_block_data(h.x, h.y, h.z, world::blocks::BlockData::AIR);
+
+                    let (cx, cy, cz) = World::get_chunk_coords_of_block(h.x, h.y, h.z);
+
+                    let mesh = build_geometry_chunk(&mut world, cx, cy, cz);
+
+                    world_renderer.add_mesh(cx, cy, cz, mesh);
+                    println!("{:?}", h);
                 },
                 None => { /* Cannot remove block */ }
             }
