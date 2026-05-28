@@ -1,3 +1,6 @@
+use std::ptr;
+
+use raylib::ffi::{LoadShader, TextFormat};
 use raylib::prelude::*;
 
 mod player;
@@ -47,6 +50,14 @@ fn main() {
     let texture: ffi::Texture = unsafe { t.unwrap() };
 
     let mut material = rl.load_material_default(&thread);
+    unsafe {
+        let shader = LoadShader(
+            // Defying all understanding, this string does NOT get null-delimited
+            // by default, so we haveto add one in manually.
+            ptr::null(),
+            "src/shader/block.frag".as_bytes().as_ptr() as *const i8);
+        material.shader = shader;
+    }
     let maps = material.maps_mut();
     maps[MaterialMapIndex::MATERIAL_MAP_ALBEDO as usize].texture = texture;
 
