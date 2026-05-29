@@ -2,14 +2,14 @@ use raylib::prelude::*;
 use std::collections::HashMap;
 
 use crate::mesh_tools::VecMesh;
-use crate::world::blocks::{BlockData, BlockTextureCoordinates};
+use crate::world::blocks::{BlockType, BlockTextureCoordinates};
 use crate::world::generation::{CHUNK_SIZE, World};
 
 pub fn build_geometry_voxel(
     world: &mut World, vmesh: &mut VecMesh, x: i64, y: i64, z: i64
 ) {
     let block_type = world.get_block_data(x, y, z);
-    if block_type == BlockData::AIR { return }
+    if block_type == BlockType::AIR { return }
     let base = BlockTextureCoordinates::new(block_type);
     for (dx, dy, dz) in [
         (-1, 0, 0),
@@ -19,7 +19,7 @@ pub fn build_geometry_voxel(
         (0, 0, -1),
         (0, 0, 1),
     ] {
-        if world.get_block_data(x + dx, y + dy, z + dz) != BlockData::AIR {
+        if world.get_block_data(x + dx, y + dy, z + dz) != BlockType::AIR {
             continue;
         }
 

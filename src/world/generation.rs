@@ -4,7 +4,7 @@ use raylib::prelude::*;
 use std::collections::HashMap;
 
 use crate::render::worldmesh;
-use crate::world::blocks::BlockData;
+use crate::world::blocks::BlockType;
 
 pub const CHUNK_SIZE: i64 = 32;
 const WORLD_RADIUS: i64 = 2;
@@ -22,7 +22,7 @@ pub struct Chunk {
      * for (y):
      *   for (z):
      *     for (x): */
-    voxels: Box<[BlockData]>,
+    voxels: Box<[BlockType]>,
 }
 
 pub struct World {
@@ -39,17 +39,17 @@ impl Chunk {
         let mut voxels = Vec::with_capacity(voxel_count as usize);
 
         for _ in 0..voxel_count {
-            voxels.push(BlockData::AIR);
+            voxels.push(BlockType::AIR);
         }
 
         Self { cx, cy, cz, voxels: voxels.into_boxed_slice() }
     }
 
-    pub fn get_block_data(self: &Self, x: i64, y: i64, z: i64) -> BlockData {
+    pub fn get_block_data(self: &Self, x: i64, y: i64, z: i64) -> BlockType {
         self.voxels[self.get_block_idx(x, y, z)]
     }
 
-    pub fn set_block_data(self: &mut Self, x: i64, y: i64, z: i64, value: BlockData) {
+    pub fn set_block_data(self: &mut Self, x: i64, y: i64, z: i64, value: BlockType) {
         self.voxels[self.get_block_idx(x, y, z)] = value;
     }
     
@@ -83,21 +83,21 @@ impl World {
         )
     }
 
-    /* returns BlockData { non_void: false } for blocks in chunks
+    /* returns BlockType { non_void: false } for blocks in chunks
      * that haven't been generated yet */
-    pub fn get_block_data(self: &Self, x: i64, y: i64, z: i64) -> BlockData {
+    pub fn get_block_data(self: &Self, x: i64, y: i64, z: i64) -> BlockType {
         let (cx, cy, cz) = World::get_chunk_coords_of_block(x, y, z);
 
         if let Some(chunk) = self.chunks.get(&(cx, cy, cz)) {
             chunk.get_block_data(x, y, z)
         } else {
-            BlockData::AIR
+            BlockType::AIR
         }
     }
 
     /* panics if used in a chunk that hasn't been generated yet */
     pub fn set_block_data(
-        self: &mut Self, x: i64, y: i64, z: i64, value: BlockData
+        self: &mut Self, x: i64, y: i64, z: i64, value: BlockType
     ) {
         let (cx, cy, cz) = World::get_chunk_coords_of_block(x, y, z);
 
@@ -126,15 +126,15 @@ impl World {
 
         for y in (CHUNK_SIZE * cy)..(CHUNK_SIZE * (cy + 1)) {
             let block_data = if y > height {
-                BlockData::AIR
+                BlockType::AIR
             } else if y == height {
-                BlockData::GRASS
+                BlockType::GRASS
             } else if y > height-3 {
-                BlockData::DIRT
+                BlockType::DIRT
             } else if y > 4 {
-                BlockData::STONE
+                BlockType::STONE
             } else {
-                BlockData::BEDROCK
+                BlockType::BEDROCK
             };
     
             self.set_block_data(x, y, z, block_data);

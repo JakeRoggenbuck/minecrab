@@ -1,12 +1,19 @@
-// All block types we will have.
 #[derive(Clone, Copy, PartialEq, Debug)]
-pub enum BlockData {
+pub struct BlockData {
+    light_emitted: i8,
+}
+
+// All block types we will have.
+// Add (BlockData) to the def to give a block the ability
+// to have a special property, like emitting light.
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum BlockType {
     AIR,
     GRASS,
     DIRT,
     STONE,
     WOOD,
-    LEAVES,
+    LEAVES(BlockData),
     BEDROCK,
 }
 
@@ -72,14 +79,14 @@ const TEX_COORDS_LEAVES: BlockTextureCoordinates = monotextured_block!(0.5, 0.1)
 
 impl BlockTextureCoordinates {
 
-    pub fn new(block_type: BlockData) -> BlockTextureCoordinates {
+    pub fn new(block_type: BlockType) -> BlockTextureCoordinates {
         match block_type {
-            BlockData::AIR => TEX_COORDS_AIR,
-            BlockData::GRASS => TEX_COORDS_GRASS,
-            BlockData::DIRT => TEX_COORDS_DIRT,
-            BlockData::STONE => TEX_COORDS_STONE,
-            BlockData::WOOD => TEX_COORDS_WOOD,
-            BlockData::LEAVES => TEX_COORDS_LEAVES,
+            BlockType::AIR => TEX_COORDS_AIR,
+            BlockType::GRASS => TEX_COORDS_GRASS,
+            BlockType::DIRT => TEX_COORDS_DIRT,
+            BlockType::STONE => TEX_COORDS_STONE,
+            BlockType::WOOD => TEX_COORDS_WOOD,
+            BlockType::LEAVES(_) => TEX_COORDS_LEAVES,
             // Not implemented yet!
             _ => TEX_COORDS_ERROR,
         }

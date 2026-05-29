@@ -111,7 +111,7 @@ fn main() {
             let hit = hit_voxel_from_player(&mut player, &mut world);
 
             if let Some(h) = hit {
-                world.set_block_data(h.x, h.y, h.z, world::blocks::BlockData::AIR);
+                world.set_block_data(h.x, h.y, h.z, world::blocks::BlockType::AIR);
                 update_mesh_on_hit(&mut world, h, &mut world_renderer);
             }
         }
@@ -125,7 +125,7 @@ fn main() {
                     h.x + h.normal_x as i64,
                     h.y + h.normal_y as i64,
                     h.z + h.normal_z as i64,
-                    world::blocks::BlockData::STONE
+                    world::blocks::BlockType::STONE
                 );
                 update_mesh_on_hit(&mut world, h, &mut world_renderer);
             }

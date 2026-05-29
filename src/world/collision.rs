@@ -1,5 +1,5 @@
 use super::generation::World;
-use super::blocks::BlockData;
+use super::blocks::BlockType;
 
 #[derive(Debug)]
 pub struct VoxelRaycastHit {
@@ -78,7 +78,7 @@ pub fn voxel_raycast(
         //let (px, py, pz) = (pos[0] as i64, pos[1] as i64, pos[2] as i64);
         let block = world.get_block_data(vx, vy, vz);
 
-        if block != BlockData::AIR {
+        if block != BlockType::AIR {
             let mut hit = VoxelRaycastHit {
                 x: vx, y: vy, z: vz,
                 normal_x: 0., normal_y: 0., normal_z: 0.,
