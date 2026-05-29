@@ -7,12 +7,16 @@ in vec3 fragVertexNormal;
 out vec4 fragColor;
 
 uniform sampler2D tex;
+uniform float dayAmount;
 
-const vec4 topColor = vec4(0.5, 0.8, 1.0, 1.0);
-const vec4 bottomColor = vec4(0.9, 0.9, 0.9, 1.0);
+const vec4 topDayColor = vec4(0.5, 0.8, 1.0, 1.0);
+const vec4 bottomDayColor = vec4(0.9, 0.9, 0.9, 1.0);
+const vec4 nightColor = vec4(0.1, 0.1, 0.1, 1.0);
 
 void main() {
     float up = dot(fragVertexNormal, vec3(0.0, -1.0, 0.0));
+    vec4 topColor = dayAmount * topDayColor + (1.0 - dayAmount) * nightColor;
+    vec4 bottomColor = dayAmount * bottomDayColor + (1.0 - dayAmount) * nightColor;
     // Top and bottom faces
     if (up > 0.9) {
         fragColor = topColor;

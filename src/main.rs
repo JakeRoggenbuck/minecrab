@@ -79,7 +79,7 @@ fn main() {
 
     let mut skybox_mesh: Mesh = create_skybox_mesh();
     let mut skybox_material = rl.load_material_default(&thread);
-    let skybox_shader = rl.load_shader(
+    let mut skybox_shader = rl.load_shader(
             &thread,
             Some("src/shader/skybox.vert"), 
             Some("src/shader/skybox.frag")
@@ -163,9 +163,8 @@ fn main() {
             skybox_cam.target -= player.camera.position;
 
             let day_amount: f32 = day_amount(frame);
-            // In the future, we need to pass this quantity into the shader. I
-            // wrestled with OpenGL for 3 hours and determined that it is really
-            // not worth the effort right now.
+            let day_amount_loc = skybox_shader.get_shader_location("dayAmount");
+            skybox_shader.set_shader_value(day_amount_loc, day_amount);
 
             d.draw_mode3D(skybox_cam, |mut d2, _camera| {
                 d2.draw_mesh(&mut skybox_mesh, skybox_material.clone(), Matrix::identity());
@@ -220,6 +219,9 @@ fn main() {
                             h.x, h.y, h.z
                         )
                     )
+                );
+                debug_info += &format!(
+                    "Frames elapsed: {}\n", frame
                 );
                 d.draw_text(&debug_info, 20, 20, 16, Color::DARKGREEN);
             }
