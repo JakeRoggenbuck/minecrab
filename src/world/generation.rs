@@ -83,7 +83,7 @@ impl World {
         let (input_tx, input_rx) = mpsc::channel::<(i64, i64, i64)>();
         let (result_tx, result_rx) = mpsc::channel::<(i64, i64, i64, Chunk, VecMesh)>();
         let chunk_gen_thread = thread::spawn(|| {
-            remote_generate_terrain_chunk(input_rx, result_tx);
+            World::remote_generate_terrain_chunk(input_rx, result_tx);
         });
 
         Self {
@@ -129,58 +129,8 @@ impl World {
             panic!("set block data in a chunk that doesn't exist");
         }
     }
-
-    fn generate_terrain_column(self: &mut Self, x: i64, z: i64, cy: i64) {
-        // Generates one column within a chunk
-        static SSN: std::sync::LazyLock<SuperSimplex> =
-            std::sync::LazyLock::new(|| SuperSimplex::new(42));
-        
-        // How shallow slopes are. Don't set below 16 or it will error. 
-        let noise_scale = 80.;
-
-        let sample_point = [
-            ((x as f64 / noise_scale)),
-            ((z as f64 / noise_scale))
-        ];
-
-        // arbitrary constants, give a height map between 4*12 and 6*12
-        let height = ((SSN.get(sample_point) + 5_f64) * 12_f64) as i64;
-
-        for y in (CHUNK_SIZE * cy)..(CHUNK_SIZE * (cy + 1)) {
-            let block_data = if y > height {
-                BlockData::AIR
-            } else if y == height {
-                BlockData::GRASS
-            } else if y > height-3 {
-                BlockData::DIRT
-            } else if y > 4 {
-                BlockData::STONE
-            } else {
-                BlockData::BEDROCK
-            };
     
-            self.set_block_data(x, y, z, block_data);
-        }
-    }
-
-    pub fn generate_terrain_chunk(self: &mut Self, cx: i64, cy: i64, cz: i64) {
-        let existing_chunk =
-            self.chunks.insert((cx, cy, cz), Chunk::new(cx, cy, cz));
-        assert!(existing_chunk.is_none());
-
-        let r = 0..CHUNK_SIZE;
-
-        for z in r.clone() { for x in r.clone() {
-            let (wx, wz) = (
-                x + CHUNK_SIZE * cx,
-                z + CHUNK_SIZE * cz
-            );
-            self.generate_terrain_column(wx, wz, cy);
-            }
-        };
-    }
-    
-    pub fn generate_next_chunk(self: &mut Self, world_renderer: &mut worldmesh::WorldRenderer) {
+    pub fn generate_next_chunk(self: &mut Self) {
         if self.next_gen_x > WORLD_RADIUS {
             // No more chunks left to generate.
             return;
@@ -228,60 +178,60 @@ impl World {
             }
         };
     }
-}
 
-fn remote_generate_terrain_chunk(input_rx: Receiver<(i64, i64, i64)>, result_tx: Sender<(i64, i64, i64, Chunk, VecMesh)>) {
-    eprintln!("Terrain generation chunk started");
-    loop {
-        let (cx, cy, cz) = input_rx.recv().unwrap();
-        let mut existing_chunk = Chunk::new(cx, cy, cz);
-
-        let r = 0..CHUNK_SIZE;
-
-        for z in r.clone() { for x in r.clone() {
-            let (wx, wz) = (
-                x + CHUNK_SIZE * cx,
-                z + CHUNK_SIZE * cz
-            );
-            remote_generate_terrain_column(&mut existing_chunk, wx, wz, cy);
+    fn remote_generate_terrain_chunk(input_rx: Receiver<(i64, i64, i64)>, result_tx: Sender<(i64, i64, i64, Chunk, VecMesh)>) {
+        eprintln!("Terrain generation chunk started");
+        loop {
+            let (cx, cy, cz) = input_rx.recv().unwrap();
+            let mut existing_chunk = Chunk::new(cx, cy, cz);
+    
+            let r = 0..CHUNK_SIZE;
+    
+            for z in r.clone() { for x in r.clone() {
+                let (wx, wz) = (
+                    x + CHUNK_SIZE * cx,
+                    z + CHUNK_SIZE * cz
+                );
+                World::remote_generate_terrain_column(&mut existing_chunk, wx, wz, cy);
+                }
             }
+    
+            let vmesh = worldmesh::remote_build_geometry_chunk(&mut existing_chunk, cx, cy, cz);
+            result_tx.send((cx, cy, cz, existing_chunk, vmesh)).unwrap();
+            eprintln!("done with {cx}, {cy}, {cz}");
         }
-
-        let vmesh = worldmesh::remote_build_geometry_chunk(&mut existing_chunk, cx, cy, cz);
-        result_tx.send((cx, cy, cz, existing_chunk, vmesh)).unwrap();
-        eprintln!("done with {cx}, {cy}, {cz}");
     }
-}
 
-fn remote_generate_terrain_column(chunk: &mut Chunk, x: i64, z: i64, cy: i64) {
-    // Generates one column within a chunk
-    static SSN: std::sync::LazyLock<SuperSimplex> =
-        std::sync::LazyLock::new(|| SuperSimplex::new(42));
-
-    // How shallow slopes are. Don't set below 16 or it will error.
-    let noise_scale = 80.;
-
-    let sample_point = [
-        ((x as f64 / noise_scale)),
-        ((z as f64 / noise_scale))
-    ];
-
-    // arbitrary constants, give a height map between 4*12 and 6*12
-    let height = ((SSN.get(sample_point) + 5_f64) * 12_f64) as i64;
-
-    for y in (CHUNK_SIZE * cy)..(CHUNK_SIZE * (cy + 1)) {
-        let block_data = if y > height {
-            BlockData::AIR
-        } else if y == height {
-            BlockData::GRASS
-        } else if y > height-3 {
-            BlockData::DIRT
-        } else if y > 4 {
-            BlockData::STONE
-        } else {
-            BlockData::BEDROCK
-        };
-
-        chunk.set_block_data(x, y, z, block_data);
+    fn remote_generate_terrain_column(chunk: &mut Chunk, x: i64, z: i64, cy: i64) {
+        // Generates one column within a chunk
+        static SSN: std::sync::LazyLock<SuperSimplex> =
+            std::sync::LazyLock::new(|| SuperSimplex::new(42));
+    
+        // How shallow slopes are. Don't set below 16 or it will error.
+        let noise_scale = 80.;
+    
+        let sample_point = [
+            ((x as f64 / noise_scale)),
+            ((z as f64 / noise_scale))
+        ];
+    
+        // arbitrary constants, give a height map between 4*12 and 6*12
+        let height = ((SSN.get(sample_point) + 5_f64) * 12_f64) as i64;
+    
+        for y in (CHUNK_SIZE * cy)..(CHUNK_SIZE * (cy + 1)) {
+            let block_data = if y > height {
+                BlockData::AIR
+            } else if y == height {
+                BlockData::GRASS
+            } else if y > height-3 {
+                BlockData::DIRT
+            } else if y > 4 {
+                BlockData::STONE
+            } else {
+                BlockData::BEDROCK
+            };
+    
+            chunk.set_block_data(x, y, z, block_data);
+        }
     }
 }

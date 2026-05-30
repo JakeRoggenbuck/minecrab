@@ -229,7 +229,7 @@ fn main() {
             }
         });
 
-        world.generate_next_chunk(&mut world_renderer);
+        world.generate_next_chunk();
         if frame % FRAMES_PER_CHUNK == 0 {
             world.poll_chunk_gen_thread(&mut world_renderer);
         }
