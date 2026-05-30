@@ -1,7 +1,7 @@
 use noise::{NoiseFn, SuperSimplex};
 use raylib::prelude::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread::{self, JoinHandle};
 
@@ -39,6 +39,8 @@ pub struct World {
     input_tx: Sender<(i64, i64, i64, Option<Chunk>)>,
     result_rx: Receiver<(i64, i64, i64, Option<Chunk>, VecMesh)>,
     chunk_gen_thread: JoinHandle<()>,
+
+    chunks_in_progress: HashSet<(i64, i64, i64)>,
 
     pub chunks: HashMap<(i64, i64, i64), Chunk>,
 }
@@ -103,6 +105,7 @@ impl World {
             input_tx,
             result_rx,
             chunk_gen_thread,
+            chunks_in_progress: HashSet::new(),
         }
     }
 
@@ -173,11 +176,20 @@ impl World {
     // So just threaded, I guess...
     /// Dispatches a new chunk gen request
     pub fn dispatch_chunk_gen(&mut self, cx: i64, cy: i64, cz: i64) {
+        if self.chunks_in_progress.contains(&(cx, cy, cz)) {
+            return;
+        }
+
         self.input_tx.send((cx, cy, cz, None)).unwrap();
+        self.chunks_in_progress.insert((cx, cy, cz));
     }
 
     /// Dispatches request to only update mesh without generating chunk
     pub fn dispatch_mesh_chunk(&mut self, cx: i64, cy: i64, cz: i64) {
+        if self.chunks_in_progress.contains(&(cx, cy, cz)) {
+            return;
+        }
+
         let v = self
             .chunks
             .get(&(cx, cy, cz))
@@ -187,6 +199,7 @@ impl World {
         // functions as a poor (rich?) man's mutex and also prevents us from
         // having to contend with lifetimes
         self.input_tx.send((cx, cy, cz, Some(v.clone()))).unwrap();
+        self.chunks_in_progress.insert((cx, cy, cz));
     }
 
     /// Polls the chunk gen thread for new blocks
@@ -201,6 +214,8 @@ impl World {
                 let mut mesh = result.4.to_mesh();
                 unsafe { mesh.upload(false) };
                 world_renderer.add_mesh(result.0, result.1, result.2, mesh);
+
+                self.chunks_in_progress.remove(&(result.0, result.1, result.2));
             }
             Err(_) => {
                 // we don't really care if it's disconnected or empty
