@@ -21,7 +21,7 @@ const TICK_LENGTH: f32 = 0.025; // 40 ticks per second
 
 // Generate one chunk every [FRAMES_PER_CHUNK] frames so world generation isn't
 // exceedingly laggy at the beginning.
-const FRAMES_PER_CHUNK: i32 = 5;
+const FRAMES_PER_CHUNK: i32 = 1;
 
 fn tick(
     world: &mut World, player: &mut Player, rl: &mut RaylibHandle
