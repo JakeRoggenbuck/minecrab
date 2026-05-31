@@ -174,7 +174,12 @@ impl World {
         // functions as a poor (rich?) man's mutex and also prevents us from
         // having to contend with lifetimes
         self.input_tx.send((cx, cy, cz, Some(v.clone()))).unwrap();
-        self.chunks_in_progress.insert((cx, cy, cz));
+
+        // XXX: We want to **allow** the same chunk to be sent for remeshing
+        // multiple times, since the mpsc acts as a queue letting the thread
+        // know that the chunk has changed. Otherwise, the mesh can lag behind
+        // the current state of the chunk of the mesh update is too slow.
+        // self.chunks_in_progress.insert((cx, cy, cz));
     }
 
     /// Polls the chunk gen thread for new blocks
