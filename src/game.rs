@@ -63,8 +63,7 @@ pub fn tick(gd: &mut GameData) {
     } else {
         let (rl, world, player) = (&mut gd.rl, &mut gd.world, &mut gd.player);
 
-        update_camera_position(player, rl);
-        update_camera_angle(player, rl);
+        player.process_tick(rl);
 
         if rl.is_key_pressed(KEY_ESCAPE) {
             gd.paused = true;

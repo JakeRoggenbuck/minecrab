@@ -112,15 +112,18 @@ fn main() {
     while !gd.should_quit {
         let frame_start = Instant::now();
         
-
         next_tick_in -= gd.last_frame_total_time;
-        while next_tick_in < 0_f32 {
+
+        if next_tick_in < 0_f32 {
             let tick_start = Instant::now();
             game::tick(&mut gd);
             gd.tick_counter += 1;
             gd.last_tick_time = tick_start.elapsed().as_secs_f32();
             next_tick_in += TICK_LENGTH;
         }
+
+        //on a scale of zero to one, how close are we to the next tick.
+        let interp = 1. - (next_tick_in/TICK_LENGTH).clamp(0., 1.);
 
         // FIXME?
         // Because rl is part of gd and rl.draw takes a mutable reference to it,
@@ -157,6 +160,7 @@ fn main() {
             });
 
             // World
+            player.update_camera(interp);
 
             gd.world_renderer.render(&mut d, player.camera);
 
