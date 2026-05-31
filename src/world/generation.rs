@@ -1,5 +1,4 @@
 use noise::{NoiseFn, SuperSimplex};
-use raylib::prelude::*;
 
 use std::collections::HashMap;
 
@@ -31,7 +30,6 @@ pub struct World {
     next_gen_z: i64,
 
     pub chunks: HashMap<(i64, i64, i64), Chunk>,
-    pub ticks: u64,
 }
 
 impl Chunk {
@@ -73,7 +71,6 @@ impl World {
             next_gen_x: -WORLD_RADIUS,
             next_gen_y: -WORLD_RADIUS,
             next_gen_z: -WORLD_RADIUS,
-            ticks: 0,
         }
     }
 

@@ -7,14 +7,12 @@ pub struct MaterialBuilder<'a> {
     thread: &'a RaylibThread,
     vert: Option<Box<str>>,
     frag: Option<Box<str>>,
-    //textures: [Box<str>;10]
     maps: Box<[ffi::MaterialMap;10]>
 }
 impl<'a> MaterialBuilder<'a> {
     pub fn init(rl: &'a mut RaylibHandle, thread: &'a RaylibThread) -> Self {
         Self { 
             rl, thread, vert: None, frag: None, 
-            //textures: from_fn(|_| Box::from(""))
             maps: unsafe { Box::new(std::mem::zeroed()) }
         }
     }

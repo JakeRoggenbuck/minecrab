@@ -1,17 +1,14 @@
 use raylib::prelude::*;
+use std::collections::VecDeque;
 
-use crate::*;
-use world::generation::*;
-use world::blocks::*;
-use render::worldmesh::*;
-use player::*;
+use crate::player::Player;
+use crate::world::generation::World;
+use crate::world::blocks::BlockData;
+use crate::render::worldmesh::{WorldRenderer, build_geometry_chunk};
+use crate::world::collision::{VoxelRaycastHit, voxel_raycast};
 
 use KeyboardKey::*;
 use MouseButton::*;
-
-use world::collision::*;
-
-const TICKS_PER_CHUNK: u64 = 4;
 
 pub struct Sounds<'a> {
     pub menu_open: Sound<'a>,
@@ -101,14 +98,12 @@ pub fn tick(gd: &mut GameData) {
             }
         }
 
-        if gd.tick_counter % TICKS_PER_CHUNK == 0 {
-            let Vector3 { x: px, y: py, z: pz } = player.camera.position;
-            world.generate_surrounding_chunks(&mut gd.world_renderer, px as i64, py as i64, pz as i64, 1);
-        }
+        let Vector3 { x: px, y: py, z: pz } = player.camera.position;
+        world.generate_surrounding_chunks(&mut gd.world_renderer, px as i64, py as i64, pz as i64, 1);
 
-        gd.debug_text =
-            if gd.debug_info_shown { debug_info_fmt(gd) }
-            else { String::new() };
+        if gd.debug_info_shown {
+            gd.debug_text = debug_info_fmt(gd);
+        }
     }
 }
 
