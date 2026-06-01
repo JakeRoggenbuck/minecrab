@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 use crate::player::Player;
 use crate::world::generation::World;
 use crate::world::blocks::BlockData;
-use crate::render::worldmesh::{WorldRenderer, build_geometry_chunk};
+use crate::render::worldmesh::WorldRenderer;
 use crate::world::collision::{VoxelRaycastHit, voxel_raycast};
 
 use KeyboardKey::*;
@@ -77,7 +77,7 @@ pub fn tick(gd: &mut GameData, rl: &mut RaylibHandle) {
             
             if let Some(h) = hit {
                 world.set_block_data(h.x, h.y, h.z, BlockData::AIR);
-                update_mesh_on_hit(world, h, &mut gd.world_renderer);
+                update_mesh_on_hit(world, h);
             }
         }
         
@@ -92,12 +92,13 @@ pub fn tick(gd: &mut GameData, rl: &mut RaylibHandle) {
                     h.z + h.normal_z as i64,
                     BlockData::STONE
                 );
-                update_mesh_on_hit(world, h, &mut gd.world_renderer);
+                update_mesh_on_hit(world, h);
             }
         }
 
         let Vector3 { x: px, y: py, z: pz } = player.camera.position;
-        world.generate_surrounding_chunks(&mut gd.world_renderer, px as i64, py as i64, pz as i64, 1);
+        world.generate_surrounding_chunks(px as i64, py as i64, pz as i64, 1);
+        world.poll_chunk_gen_thread(&mut gd.world_renderer);
 
         if gd.debug_info_shown {
             gd.debug_text = debug_info_fmt(gd);
@@ -138,10 +139,8 @@ fn hit_voxel_from_player(player: &mut Player, world: &mut World) -> Option<Voxel
     voxel_raycast(&world, p.x, p.y, p.z, dir.x, dir.y, dir.z, Some(100.))
 }
 
-fn update_mesh_on_hit(world: &mut World, h: VoxelRaycastHit, world_renderer: &mut WorldRenderer) {
+fn update_mesh_on_hit(world: &mut World, h: VoxelRaycastHit) {
     // Update a mesh for a given voxel in hit
     let (cx, cy, cz) = World::get_chunk_coords_of_block(h.x, h.y, h.z);
-    let mesh = build_geometry_chunk(world, cx, cy, cz);
-
-    world_renderer.add_mesh(cx, cy, cz, mesh);
+    world.dispatch_mesh_chunk(cx, cy, cz);
 }
