@@ -27,6 +27,9 @@ const TICKRATE: u32 = 40;
 const TICK_LENGTH: f32 = 1./(TICKRATE as f32);
 
 fn main() {
+    // XXX: RaylibHandle may not be dropped before any of the raylib resources!!
+    // if it ever goes in a struct with other raylib stuff, it needs to be the
+    // last member so it gets dropped last. Ask me how I know.
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH, WINDOW_HEIGHT)
         .title("Minecrab")
